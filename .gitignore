@@ -1,0 +1,25 @@
+# OS / editor
+.DS_Store
+._*
+.vscode/
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# node
+node_modules/
+dist/
+build/
+npm-debug.log*
+yarn-error.log*
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# logs
+*.log
