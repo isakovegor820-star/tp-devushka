@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Комната заявок — 4 варианта · ТехнологИИ права 2026</title>
+<style>
+:root{
+  --bg:#070a12; --panel:#0d1422; --panel2:#0c1322;
+  --ink:#e8edf4; --t2:#c3ccda; --t3:#8b98aa;
+  --cyan:#00E5FF; --magenta:#FF2E9A;
+  --line:rgba(255,255,255,.09); --cyanline:rgba(0,229,255,.28);
+  --f:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;
+  --f-mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--f);-webkit-font-smoothing:antialiased}
+a{color:var(--cyan)}
+
+/* ── переключатель вариантов ── */
+.switch{position:sticky;top:0;z-index:50;background:rgba(7,10,18,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.switch .in{max-width:1180px;margin:0 auto;padding:12px 20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.switch b{font-size:13px;color:var(--t3);font-family:var(--f-mono);letter-spacing:.12em;text-transform:uppercase;margin-right:6px}
+.sw{padding:10px 16px;min-height:44px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--t2);font:600 13.5px var(--f);cursor:pointer;transition:.2s var(--ease)}
+.sw:hover{border-color:var(--cyanline);color:var(--ink)}
+.sw[aria-selected="true"]{background:var(--cyan);border-color:var(--cyan);color:#03121a}
+.sw:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+
+.note{max-width:1180px;margin:0 auto;padding:14px 20px 0}
+.note p{margin:0;color:var(--t3);font-size:13.5px}
+
+/* ── общие атомы ── */
+.wrap{max-width:1180px;margin:0 auto;padding:26px 20px 90px}
+.cap{font-family:var(--f-mono);font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.cap::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--cyanline),transparent)}
+h1{font-size:clamp(30px,5vw,54px);line-height:1.02;letter-spacing:-.02em;margin:0 0 16px;font-weight:800}
+h1 .g{background:linear-gradient(92deg,var(--magenta),#9a6cff 45%,var(--cyan));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.sub{color:var(--t2);font-size:16.5px;max-width:62ch;margin:0 0 26px}
+.sub b{color:var(--ink)}
+
+.stats{display:grid;grid-template-columns:1fr;gap:14px;margin:0 0 30px}
+@media(min-width:760px){.stats{grid-template-columns:repeat(3,1fr)}}
+.st{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.st svg{color:var(--magenta);margin-bottom:10px}
+.st h4{margin:0 0 4px;font-size:17px;font-weight:700}
+.st p{margin:0;color:var(--t3);font-size:13.5px;line-height:1.45}
+
+.tabs{display:inline-flex;gap:6px;padding:6px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.02);margin-bottom:26px}
+.tab{display:flex;align-items:center;gap:9px;min-height:44px;padding:10px 18px;border:0;border-radius:10px;background:transparent;color:var(--t3);font:700 13px var(--f);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:.2s var(--ease)}
+.tab[aria-selected="true"]{background:var(--cyan);color:#03121a}
+.tab:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+
+.step{font-family:var(--f-mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--magenta);margin:0 0 14px}
+.step i{font-style:normal;color:var(--cyan)}
+
+/* поля */
+.field{margin-bottom:16px}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--t2);margin-bottom:7px}
+.field .req{color:var(--magenta)}
+.field input{width:100%;min-height:48px;padding:12px 15px;border-radius:11px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--ink);font:16px var(--f);transition:.18s var(--ease)}
+.field input::placeholder{color:#5d697a}
+.field input:focus{outline:0;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,229,255,.16)}
+.field input:focus-visible{outline:2px solid transparent}
+.hint{color:var(--t3);font-size:13px;margin:-6px 0 18px}
+.two{display:grid;grid-template-columns:1fr;gap:0 14px}
+@media(min-width:640px){.two{grid-template-columns:1fr 1fr}}
+
+/* согласия */
+.consent{border:1px solid var(--line);border-radius:14px;padding:18px;margin:22px 0}
+.consent>p{margin:0 0 14px;color:var(--t3);font-size:13.5px;line-height:1.6;display:flex;gap:11px}
+.consent>p svg{flex:none;color:var(--magenta);margin-top:2px}
+.chk{display:flex;gap:12px;align-items:flex-start;padding:9px 0;min-height:44px;cursor:pointer}
+.chk input{flex:none;width:20px;height:20px;margin-top:2px;accent-color:var(--cyan);cursor:pointer}
+.chk input:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.chk span{font-size:13.5px;color:var(--t2);line-height:1.5}
+
+.cta{width:100%;min-height:56px;border:0;border-radius:13px;background:linear-gradient(135deg,var(--cyan),#0086B3);color:#03121a;font:800 15px var(--f);letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:.2s var(--ease)}
+.cta:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.cta:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
+.foot-note{text-align:center;color:var(--t3);font-size:13px;margin-top:14px}
+
+.card{background:linear-gradient(150deg,var(--panel2),#080c15);border:1px solid var(--cyanline);border-radius:20px;position:relative}
+.hud::before,.hud::after{content:"";position:absolute;width:16px;height:16px;border:1.5px solid rgba(0,229,255,.5);pointer-events:none}
+.hud::before{top:12px;left:12px;border-right:0;border-bottom:0}
+.hud::after{bottom:12px;right:12px;border-left:0;border-top:0}
+
+/* тарифы (базовая карточка) */
+.tar{position:relative;text-align:left;width:100%;padding:20px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.02);cursor:pointer;transition:.2s var(--ease);color:inherit}
+.tar:hover{border-color:var(--cyanline);transform:translateY(-2px)}
+.tar[aria-pressed="true"]{border-color:var(--cyan);box-shadow:0 0 0 1px var(--cyan) inset,0 18px 44px -26px rgba(0,229,255,.7)}
+.tar:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+.tar h4{margin:0 0 6px;font-size:19px;font-weight:700}
+.tar .price{font-size:27px;font-weight:800;color:var(--cyan);letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.tar p{margin:8px 0 0;color:var(--t3);font-size:13.5px}
+.pick{position:absolute;top:14px;right:14px;font:700 10px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:#180a12;background:var(--magenta);padding:5px 9px;border-radius:99px}
+.tgrid{display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:30px}
+@media(min-width:720px){.tgrid{grid-template-columns:1fr 1fr}}
+
+section[data-v]{display:none}
+section[data-v].on{display:block}
+.vhead{border-left:3px solid var(--magenta);padding:2px 0 2px 14px;margin:0 0 26px}
+.vhead h2{margin:0 0 4px;font-size:19px}
+.vhead p{margin:0;color:var(--t3);font-size:13.5px}
+
+/* ═════ V1 · БИЛЕТ-ТАЛОН ═════ */
+.v1 .stub{display:grid;grid-template-columns:1fr;overflow:visible}
+@media(min-width:980px){.v1 .stub{grid-template-columns:1.25fr minmax(0,.85fr)}}
+.v1 .stub-l{padding:clamp(24px,3vw,38px)}
+.v1 .stub-r{position:relative;padding:clamp(24px,3vw,38px);border-top:2px dashed rgba(0,229,255,.35)}
+@media(min-width:980px){
+  .v1 .stub-r{border-top:0;border-left:2px dashed rgba(0,229,255,.4)}
+  .v1 .stub-r::before,.v1 .stub-r::after{content:"";position:absolute;left:-13px;width:24px;height:24px;border-radius:50%;background:var(--bg);border:1px solid rgba(0,229,255,.3)}
+  .v1 .stub-r::before{top:-13px}.v1 .stub-r::after{bottom:-13px}
+}
+.v1 .tarrow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 18px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.02);cursor:pointer;margin-bottom:10px;width:100%;text-align:left;color:inherit;transition:.2s var(--ease)}
+.v1 .tarrow[aria-pressed="true"]{border-color:var(--cyan);background:rgba(0,229,255,.06)}
+.v1 .tarrow:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.v1 .tarrow .nm{display:block;font-weight:700}
+.v1 .tarrow .ds{display:block;color:var(--t3);font-size:13px;margin-top:3px}
+.v1 .tarrow .pr{font-weight:800;color:var(--cyan);white-space:nowrap;font-variant-numeric:tabular-nums}
+.v1 .barcode{display:flex;gap:2px;height:44px;margin:18px 0 0;align-items:flex-end;opacity:.45}
+.v1 .barcode i{display:block;width:2px;background:var(--ink);height:100%}
+/* корешок — колонка: низ прибит к низу, пустоты нет */
+.v1 .stub-r{display:flex;flex-direction:column}
+.v1 .stub-bottom{margin-top:auto;padding-top:18px}
+.v1 .tsum{margin:0 0 16px;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.v1 .tsum .row{display:flex;justify-content:space-between;gap:14px;padding:12px 15px;font-size:14px;border-bottom:1px dashed rgba(255,255,255,.08)}
+.v1 .tsum .row span{color:var(--t3);flex:none}
+.v1 .tsum .row b{font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.v1 .tsum .gift b{color:var(--magenta)}
+.v1 .strike{text-decoration:line-through;color:var(--t3);font-weight:400;margin-right:7px}
+.v1 .total{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:15px;background:rgba(0,229,255,.06)}
+.v1 .total span{color:var(--t2);font-size:14px}
+.v1 .total b{font-size:26px;font-weight:800;color:var(--cyan);font-variant-numeric:tabular-nums;line-height:1}
+.v1 .qrbox{display:flex;gap:12px;align-items:center;padding:12px 14px;border:1px solid rgba(0,229,255,.18);background:rgba(0,229,255,.05);border-radius:12px;margin-bottom:16px;font-size:12.5px;color:var(--t2);line-height:1.45}
+.v1 .qrbox svg{flex:none;color:var(--cyan)}
+
+/* ═════ V2 · ТЕРМИНАЛ ═════ */
+.v2 .term{border:1px solid var(--cyanline);border-radius:16px;background:
+   repeating-linear-gradient(0deg,rgba(0,229,255,.028) 0 1px,transparent 1px 3px),
+   linear-gradient(160deg,#0a1120,#070a12);padding:clamp(22px,3vw,36px);font-family:var(--f-mono)}
+.v2 .tline{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);margin:0 0 18px}
+.v2 .tline b{color:var(--magenta);font-weight:400}
+.v2 .trow{display:flex;justify-content:space-between;gap:14px;padding:15px 0;border-bottom:1px dashed rgba(255,255,255,.1);cursor:pointer;width:100%;background:none;border-left:0;border-right:0;border-top:0;color:inherit;text-align:left;font-family:inherit;min-height:44px}
+.v2 .trow[aria-pressed="true"]{color:var(--cyan)}
+.v2 .trow[aria-pressed="true"] .mk::before{content:"▸ "}
+.v2 .trow:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.v2 .mk{font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+.v2 .mk small{display:block;color:var(--t3);letter-spacing:.02em;text-transform:none;font-size:12.5px;margin-top:3px}
+.v2 .pr{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.v2 .field label{font-family:var(--f-mono);letter-spacing:.1em;text-transform:uppercase;font-size:11.5px;color:var(--cyan)}
+.v2 .field input{font-family:var(--f-mono);border-radius:8px;background:rgba(0,0,0,.35)}
+.v2 .cta{border-radius:8px;font-family:var(--f-mono)}
+
+/* ═════ V3 · CHECKOUT + ЛИПКИЙ ЧЕК ═════ */
+.v3 .cols{display:grid;grid-template-columns:1fr;gap:26px}
+@media(min-width:980px){.v3 .cols{grid-template-columns:1.4fr minmax(320px,.6fr);align-items:start}}
+.v3 .receipt{position:sticky;top:82px;padding:24px;border-radius:18px;border:1px solid var(--cyanline);background:linear-gradient(150deg,#0c1322,#080c15)}
+.v3 .receipt h3{margin:0 0 18px;font-size:13px;font-family:var(--f-mono);letter-spacing:.18em;text-transform:uppercase;color:var(--cyan)}
+.v3 .rrow{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px dashed rgba(255,255,255,.08);font-size:14.5px}
+.v3 .rrow span{color:var(--t3)}
+.v3 .rrow b{font-weight:600;font-variant-numeric:tabular-nums}
+.v3 .gift b{color:var(--magenta)}
+.v3 .strike{text-decoration:line-through;color:var(--t3);margin-right:7px;font-weight:400}
+.v3 .total{display:flex;justify-content:space-between;align-items:baseline;padding:16px 0 4px;font-size:15px}
+.v3 .total b{font-size:27px;font-weight:800;color:var(--cyan);font-variant-numeric:tabular-nums}
+.v3 .qr{display:flex;gap:11px;align-items:center;margin-top:16px;padding:12px;border-radius:11px;background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.18);font-size:12.5px;color:var(--t2)}
+.v3 .qr svg{flex:none;color:var(--cyan)}
+
+/* ═════ V4 · СТЕППЕР ═════ */
+.v4 .prog{display:flex;gap:10px;margin-bottom:30px}
+.v4 .pg{flex:1;height:4px;border-radius:99px;background:rgba(255,255,255,.09);overflow:hidden}
+.v4 .pg.done{background:var(--cyan)}
+.v4 .pnum{font-family:var(--f-mono);font-size:12px;letter-spacing:.2em;color:var(--t3);text-transform:uppercase;margin-bottom:10px}
+.v4 .ptitle{font-size:clamp(24px,3.4vw,36px);font-weight:800;letter-spacing:-.01em;margin:0 0 8px}
+.v4 .pdesc{color:var(--t3);margin:0 0 26px;font-size:15px}
+.v4 .panel{padding:clamp(22px,3vw,36px)}
+.v4 .nav{display:flex;gap:12px;margin-top:26px}
+.v4 .ghost{min-height:56px;padding:0 22px;border-radius:13px;border:1px solid var(--line);background:transparent;color:var(--t2);font:700 14px var(--f);cursor:pointer}
+.v4 .ghost:hover{border-color:var(--cyanline);color:var(--ink)}
+.v4 .ghost:focus-visible,.v4 .cta:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
+.v4 .cta{flex:1}
+.v4 .stepbox{display:none}.v4 .stepbox.on{display:block}
+</style>
+</head>
+<body>
+
+<div class="switch"><div class="in">
+  <b>4 варианта</b>
+  <button class="sw" data-go="1" aria-selected="true">1 · Билет-талон</button>
+  <button class="sw" data-go="2" aria-selected="false">2 · Терминал</button>
+  <button class="sw" data-go="3" aria-selected="false">3 · Checkout + чек</button>
+  <button class="sw" data-go="4" aria-selected="false">4 · Степпер</button>
+</div></div>
+
+<div class="note"><p>Все четыре — на ваших токенах (фон #070a12, cyan #00E5FF, magenta #FF2E9A, Inter + моно-капшены). Розовый как основной я намеренно не брал: у вас cyan — первичный, magenta — акцент. Копия одинаковая, чтобы сравнивать именно дизайн.</p></div>
+
+<main class="wrap">
+
+<!-- ══════════ V1 · БИЛЕТ-ТАЛОН ══════════ -->
+<section data-v="1" class="v1 on">
+  <div class="vhead"><h2>Вариант 1 — «Билет-талон»</h2>
+  <p>Продолжает вашу главную визуальную метафору: перфорация, отрывной корешок, HUD-уголки — как на карточке сертификата. Самый «свой» из четырёх.</p></div>
+
+  <p class="cap">// участие · технологии права 2026</p>
+  <h1>Стать <span class="g">участником</span></h1>
+  <p class="sub">25–26 сентября 2026, Москва, БЦ «Красные Ворота». Оставьте данные — команда <b>«ТехнологИИ Права»</b> подтвердит участие и пришлёт счёт с QR-кодом.</p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true">Участник</button>
+    <button class="tab" role="tab" aria-selected="false">Стенд для компании</button>
+  </div>
+
+  <div class="card hud stub">
+    <div class="stub-l">
+      <p class="step"><i>01</i> · выберите тариф</p>
+      <button class="tarrow" aria-pressed="false" data-t="Стандарт" data-p="35000" data-line="Участие, 1 день" data-dates="25 или 26 сентября 2026"><span><span class="nm">Стандарт</span><span class="ds">любой 1 день на выбор</span></span><span class="pr">35 000 ₽</span></button>
+      <button class="tarrow" aria-pressed="true" data-t="Бизнес" data-p="55000" data-line="Участие, 2 дня" data-dates="25–26 сентября 2026"><span><span class="nm">Бизнес</span><span class="ds">оба дня + воркшопы по ИИ</span></span><span class="pr">55 000 ₽</span></button>
+      <button class="tarrow" aria-pressed="false" data-t="Full Pass" data-p="88000" data-line="Участие, 2 дня + мастермайнды" data-dates="25–26 сентября 2026"><span><span class="nm">Full Pass</span><span class="ds">всё + Спикерская и мастермайнды</span></span><span class="pr">88 000 ₽</span></button>
+      <button class="tarrow" aria-pressed="false" data-t="Корпоративный" data-p="99000" data-line="Участие, 2 дня × 5 человек" data-dates="25–26 сентября 2026"><span><span class="nm">Корпоративный</span><span class="ds">5 билетов на команду</span></span><span class="pr">99 000 ₽</span></button>
+
+      <p class="step" style="margin-top:26px"><i>02</i> · ваши данные</p>
+      <div class="field"><label for="v1n">ФИО <span class="req">*</span></label><input id="v1n" placeholder="Иванов Иван"></div>
+      <div class="field"><label for="v1c">Компания <span style="color:var(--t3);font-weight:400">— необязательно</span></label><input id="v1c" placeholder="ООО «Ромашка»"></div>
+      <div class="two">
+        <div class="field"><label for="v1e">Email</label><input id="v1e" type="email" placeholder="you@company.ru"></div>
+        <div class="field"><label for="v1p">Телефон</label><input id="v1p" type="tel" placeholder="+7 900 000-00-00"></div>
+      </div>
+      <p class="hint">Оставьте email или телефон — как удобнее для связи и счёта.</p>
+    </div>
+
+    <div class="stub-r">
+      <p class="step"><i>03</i> · ваш билет</p>
+
+      <div class="tsum">
+        <div class="row"><span>Тариф</span><b data-tk="name">Бизнес</b></div>
+        <div class="row"><span>Даты</span><b data-tk="dates">25–26 сентября 2026</b></div>
+        <div class="row"><span>Место</span><b>Москва, БЦ&nbsp;«Красные Ворота»</b></div>
+        <div class="row"><span data-tk="line">Участие, 2 дня</span><b data-tk="price">55 000 ₽</b></div>
+        <div class="row gift"><span>Курс в подарок</span><b><span class="strike">30 000 ₽</span>0 ₽</b></div>
+        <div class="total"><span>Итого к оплате</span><b data-tk="total">55 000 ₽</b></div>
+      </div>
+
+      <div class="qrbox">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3z"/></svg>
+        <span>Счёт с QR-кодом или для юрлица — как удобно</span>
+      </div>
+
+      <div class="consent">
+        <p><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>Оставляя заявку, вы соглашаетесь на обработку персональных данных организатором — <b>«ТехнологИИ Права»</b>.</span></p>
+        <label class="chk"><input type="checkbox" required><span>Я даю <a href="docs/soglasie-pdn.html">согласие на обработку ПДн</a> и ознакомлен(а) с <a href="docs/politika-obrabotki-pdn.html">Политикой</a>. <span class="req">*</span></span></label>
+        <label class="chk"><input type="checkbox"><span>Согласен(на) получать информационные и рекламные рассылки (необязательно).</span></label>
+      </div>
+
+      <div class="stub-bottom">
+        <button class="cta">Забронировать участие</button>
+        <p class="foot-note">Менеджер подтвердит и пришлёт счёт с QR-кодом.</p>
+        <div class="barcode" aria-hidden="true"><i style="height:70%"></i><i></i><i style="height:45%"></i><i></i><i style="height:80%"></i><i style="height:35%"></i><i></i><i style="height:60%"></i><i></i><i style="height:90%"></i><i style="height:40%"></i><i></i><i style="height:75%"></i><i></i><i style="height:50%"></i><i></i><i style="height:85%"></i><i style="height:30%"></i><i></i><i style="height:65%"></i></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ V2 · ТЕРМИНАЛ ══════════ -->
+<section data-v="2" class="v2">
+  <div class="vhead"><h2>Вариант 2 — «Терминал»</h2>
+  <p>Моноширинный, техничный: как посадочный талон в консоли. Перекликается с вашими капшенами «// зачем ехать» и кинетическими колонками. Самый характерный, но самый «нишевый».</p></div>
+
+  <p class="cap">// участие · технологии права 2026</p>
+  <h1>Стать <span class="g">участником</span></h1>
+  <p class="sub">25–26 сентября 2026, Москва, БЦ «Красные Ворота». Заявка → подтверждение → счёт с QR-кодом.</p>
+
+  <div class="term">
+    <p class="tline">// <b>01</b> выбор тарифа <span style="color:var(--t3)">— обязательно</span></p>
+    <button class="trow" aria-pressed="false"><span class="mk">Стандарт<small>любой 1 день на выбор</small></span><span class="pr">35 000 ₽</span></button>
+    <button class="trow" aria-pressed="true"><span class="mk">Бизнес<small>оба дня + воркшопы по ИИ</small></span><span class="pr">55 000 ₽</span></button>
+    <button class="trow" aria-pressed="false"><span class="mk">Full Pass<small>всё + Спикерская и мастермайнды</small></span><span class="pr">88 000 ₽</span></button>
+    <button class="trow" aria-pressed="false" style="border-bottom:0"><span class="mk">Корпоративный<small>5 билетов на команду</small></span><span class="pr">99 000 ₽</span></button>
+
+    <p class="tline" style="margin:26px 0 16px">// <b>02</b> идентификация</p>
+    <div class="field"><label for="v2n">ФИО *</label><input id="v2n" placeholder="Иванов Иван"></div>
+    <div class="field"><label for="v2c">Компания — необязательно</label><input id="v2c" placeholder="ООО «Ромашка»"></div>
+    <div class="two">
+      <div class="field"><label for="v2e">Email</label><input id="v2e" type="email" placeholder="you@company.ru"></div>
+      <div class="field"><label for="v2p">Телефон</label><input id="v2p" type="tel" placeholder="+7 900 000-00-00"></div>
+    </div>
+    <p class="hint">Оставьте email или телефон — как удобнее для связи и счёта.</p>
+
+    <p class="tline" style="margin:26px 0 16px">// <b>03</b> согласия</p>
+    <label class="chk"><input type="checkbox" required><span>Я даю <a href="docs/soglasie-pdn.html">согласие на обработку ПДн</a> и ознакомлен(а) с <a href="docs/politika-obrabotki-pdn.html">Политикой</a>. *</span></label>
+    <label class="chk"><input type="checkbox"><span>Согласен(на) получать рассылки (необязательно).</span></label>
+
+    <button class="cta" style="margin-top:22px">Забронировать участие</button>
+    <p class="foot-note" style="font-family:var(--f-mono);font-size:11.5px;letter-spacing:.08em">// после заявки менеджер пришлёт счёт с qr-кодом</p>
+  </div>
+</section>
+
+<!-- ══════════ V3 · CHECKOUT + ЛИПКИЙ ЧЕК ══════════ -->
+<section data-v="3" class="v3">
+  <div class="vhead"><h2>Вариант 3 — «Checkout с липким чеком»</h2>
+  <p>Конверсионный: слева шаги, справа прилипший чек с итогом и подарочным сертификатом. Человек всё время видит, за что платит. Ставлю на него как на самый результативный.</p></div>
+
+  <p class="cap">// участие · технологии права 2026</p>
+  <h1>Стать <span class="g">участником</span></h1>
+  <p class="sub">25–26 сентября 2026, Москва, БЦ «Красные Ворота».</p>
+
+  <div class="stats">
+    <div class="st"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87"/></svg><h4>250+ участников</h4><p>юристы, арбитражные управляющие, ТОП-менеджмент</p></div>
+    <div class="st"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M5 8l7-5 7 5"/></svg><h4>6 потоков · 22 сессии</h4><p>БФЛ, Legal Tech, ИИ и автоматизация юрбизнеса</p></div>
+    <div class="st"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3z"/></svg><h4>Оплата по QR</h4><p>после заявки пришлём счёт: QR-код или для юрлица</p></div>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true">Участник</button>
+    <button class="tab" role="tab" aria-selected="false">Стенд для компании</button>
+  </div>
+
+  <div class="cols">
+    <div>
+      <p class="step"><i>01</i> · выберите тариф</p>
+      <div class="tgrid">
+        <button class="tar" aria-pressed="false" data-t="Стандарт" data-p="35000" data-line="Участие, 1 день" data-dates="25 или 26 сентября 2026"><h4>Стандарт</h4><div class="price">35 000 ₽</div><p>любой 1 день на выбор</p></button>
+        <button class="tar" aria-pressed="true" data-t="Бизнес" data-p="55000" data-line="Участие, 2 дня" data-dates="25–26 сентября 2026"><span class="pick">Выбор участников</span><h4>Бизнес</h4><div class="price">55 000 ₽</div><p>оба дня + воркшопы по ИИ</p></button>
+        <button class="tar" aria-pressed="false" data-t="Full Pass" data-p="88000" data-line="Участие, 2 дня + мастермайнды" data-dates="25–26 сентября 2026"><h4>Full Pass</h4><div class="price">88 000 ₽</div><p>всё + Спикерская и мастермайнды</p></button>
+        <button class="tar" aria-pressed="false" data-t="Корпоративный" data-p="99000" data-line="Участие, 2 дня × 5 человек" data-dates="25–26 сентября 2026"><h4>Корпоративный</h4><div class="price">99 000 ₽</div><p>5 билетов на команду</p></button>
+      </div>
+
+      <p class="step"><i>02</i> · ваши данные</p>
+      <div class="field"><label for="v3n">ФИО <span class="req">*</span></label><input id="v3n" placeholder="Иванов Иван"></div>
+      <div class="field"><label for="v3c">Компания <span style="color:var(--t3);font-weight:400">— необязательно</span></label><input id="v3c" placeholder="ООО «Ромашка»"></div>
+      <div class="two">
+        <div class="field"><label for="v3e">Email</label><input id="v3e" type="email" placeholder="you@company.ru"></div>
+        <div class="field"><label for="v3p">Телефон</label><input id="v3p" type="tel" placeholder="+7 900 000-00-00"></div>
+      </div>
+      <p class="hint">Оставьте email или телефон — как удобнее для связи и счёта.</p>
+
+      <div class="consent">
+        <p><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>Оставляя заявку, вы соглашаетесь на обработку персональных данных (ФИО, контакты) организатором — <b>«ТехнологИИ Права»</b> — для оформления участия. Согласие может быть отозвано письменно.</span></p>
+        <label class="chk"><input type="checkbox" required><span>Я даю <a href="docs/soglasie-pdn.html">согласие на обработку персональных данных</a> и ознакомлен(а) с <a href="docs/politika-obrabotki-pdn.html">Политикой обработки ПДн</a>. <span class="req">*</span></span></label>
+        <label class="chk"><input type="checkbox"><span>Согласен(на) получать информационные и рекламные рассылки (необязательно).</span></label>
+      </div>
+    </div>
+
+    <aside class="receipt">
+      <h3>Ваш заказ</h3>
+      <div class="rrow"><span>Тариф</span><b data-tk="name">Бизнес</b></div>
+      <div class="rrow"><span data-tk="line">Участие, 2 дня</span><b data-tk="price">55 000 ₽</b></div>
+      <div class="rrow gift"><span>Курс «ТехнологИИ для юристов»</span><b><span class="strike">30 000 ₽</span>в подарок</b></div>
+      <div class="total"><span>Итого к оплате</span><b data-tk="total">55 000 ₽</b></div>
+      <div class="qr"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3z"/></svg><span>Счёт с QR-кодом или для юрлица — как удобно</span></div>
+      <button class="cta" style="margin-top:18px">Забронировать участие</button>
+      <p class="foot-note">Менеджер подтвердит участие после заявки.</p>
+    </aside>
+  </div>
+</section>
+
+<!-- ══════════ V4 · СТЕППЕР ══════════ -->
+<section data-v="4" class="v4">
+  <div class="vhead"><h2>Вариант 4 — «Полноэкранный степпер»</h2>
+  <p>Одно решение на экран: тариф → данные → согласия. Минимум полей в поле зрения, крупная типографика. Лучший на телефоне, но требует трёх кликов.</p></div>
+
+  <p class="cap">// участие · технологии права 2026</p>
+  <h1>Стать <span class="g">участником</span></h1>
+
+  <div class="prog" aria-hidden="true"><div class="pg done"></div><div class="pg"></div><div class="pg"></div></div>
+
+  <div class="card hud panel">
+    <div class="stepbox on" data-s="1">
+      <p class="pnum">Шаг 1 из 3</p>
+      <h3 class="ptitle">Выберите тариф</h3>
+      <p class="pdesc">Можно поменять позже — менеджер подтвердит перед счётом.</p>
+      <div class="tgrid">
+        <button class="tar" aria-pressed="false" data-t="Стандарт" data-p="35000" data-line="Участие, 1 день" data-dates="25 или 26 сентября 2026"><h4>Стандарт</h4><div class="price">35 000 ₽</div><p>любой 1 день на выбор</p></button>
+        <button class="tar" aria-pressed="true" data-t="Бизнес" data-p="55000" data-line="Участие, 2 дня" data-dates="25–26 сентября 2026"><span class="pick">Выбор участников</span><h4>Бизнес</h4><div class="price">55 000 ₽</div><p>оба дня + воркшопы по ИИ</p></button>
+        <button class="tar" aria-pressed="false" data-t="Full Pass" data-p="88000" data-line="Участие, 2 дня + мастермайнды" data-dates="25–26 сентября 2026"><h4>Full Pass</h4><div class="price">88 000 ₽</div><p>всё + Спикерская и мастермайнды</p></button>
+        <button class="tar" aria-pressed="false" data-t="Корпоративный" data-p="99000" data-line="Участие, 2 дня × 5 человек" data-dates="25–26 сентября 2026"><h4>Корпоративный</h4><div class="price">99 000 ₽</div><p>5 билетов на команду</p></button>
+      </div>
+      <div class="nav"><button class="cta" data-next="2">Далее — ваши данные</button></div>
+    </div>
+
+    <div class="stepbox" data-s="2">
+      <p class="pnum">Шаг 2 из 3</p>
+      <h3 class="ptitle">Ваши данные</h3>
+      <p class="pdesc">Достаточно одного канала связи — email или телефона.</p>
+      <div class="field"><label for="v4n">ФИО <span class="req">*</span></label><input id="v4n" placeholder="Иванов Иван"></div>
+      <div class="field"><label for="v4c">Компания <span style="color:var(--t3);font-weight:400">— необязательно</span></label><input id="v4c" placeholder="ООО «Ромашка»"></div>
+      <div class="two">
+        <div class="field"><label for="v4e">Email</label><input id="v4e" type="email" placeholder="you@company.ru"></div>
+        <div class="field"><label for="v4p">Телефон</label><input id="v4p" type="tel" placeholder="+7 900 000-00-00"></div>
+      </div>
+      <div class="nav"><button class="ghost" data-next="1">Назад</button><button class="cta" data-next="3">Далее — подтверждение</button></div>
+    </div>
+
+    <div class="stepbox" data-s="3">
+      <p class="pnum">Шаг 3 из 3</p>
+      <h3 class="ptitle">Подтверждение</h3>
+      <p class="pdesc">Тариф «<span data-tk="name">Бизнес</span>» · <span data-tk="total">55 000 ₽</span> · курс на 30 000 ₽ в подарок.</p>
+      <div class="consent">
+        <p><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>Оставляя заявку, вы соглашаетесь на обработку персональных данных организатором — <b>«ТехнологИИ Права»</b>. Оплата — по счёту с QR-кодом.</span></p>
+        <label class="chk"><input type="checkbox" required><span>Я даю <a href="docs/soglasie-pdn.html">согласие на обработку ПДн</a> и ознакомлен(а) с <a href="docs/politika-obrabotki-pdn.html">Политикой</a>. <span class="req">*</span></span></label>
+        <label class="chk"><input type="checkbox"><span>Согласен(на) получать рассылки (необязательно).</span></label>
+      </div>
+      <div class="nav"><button class="ghost" data-next="2">Назад</button><button class="cta">Забронировать участие</button></div>
+      <p class="foot-note">Менеджер подтвердит и пришлёт счёт с QR-кодом.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+(function(){
+  var secs = document.querySelectorAll('section[data-v]');
+  var sws  = document.querySelectorAll('.sw');
+  function go(n){
+    secs.forEach(function(s){ s.classList.toggle('on', s.dataset.v === n); });
+    sws.forEach(function(b){ b.setAttribute('aria-selected', b.dataset.go === n ? 'true':'false'); });
+    history.replaceState(null,'','#v'+n); window.scrollTo(0,0);
+  }
+  sws.forEach(function(b){ b.addEventListener('click', function(){ go(b.dataset.go); }); });
+  var h = (location.hash.match(/^#v([1-4])$/)||[])[1]; if(h) go(h);
+
+  // выбор тарифа → живой пересчёт билета/чека
+  function rub(n){ return n.toLocaleString('ru-RU') + ' ₽'; }
+  function syncTicket(sec, btn){
+    if(!sec || !btn || !btn.dataset.t) return;
+    var d = btn.dataset;
+    function set(key, val){
+      sec.querySelectorAll('[data-tk="'+key+'"]').forEach(function(e){ e.textContent = val; });
+    }
+    set('name',  d.t);
+    set('line',  d.line);
+    set('dates', d.dates);
+    set('price', rub(+d.p));
+    set('total', rub(+d.p));
+  }
+  document.querySelectorAll('.tgrid, .stub-l, .term').forEach(function(scope){
+    var items = scope.querySelectorAll('[aria-pressed]');
+    var sec   = scope.closest('section[data-v]');
+    items.forEach(function(it){
+      it.addEventListener('click', function(){
+        items.forEach(function(x){ x.setAttribute('aria-pressed','false'); });
+        it.setAttribute('aria-pressed','true');
+        syncTicket(sec, it);
+      });
+    });
+    var cur = scope.querySelector('[aria-pressed="true"]');
+    if(cur) syncTicket(sec, cur); // стартовая синхронизация
+  });
+
+  // степпер V4
+  var boxes = document.querySelectorAll('.v4 .stepbox');
+  var pgs   = document.querySelectorAll('.v4 .pg');
+  document.querySelectorAll('.v4 [data-next]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var n = b.dataset.next;
+      boxes.forEach(function(x){ x.classList.toggle('on', x.dataset.s === n); });
+      pgs.forEach(function(p,i){ p.classList.toggle('done', i < +n); });
+    });
+  });
+  // табы
+  document.querySelectorAll('[role="tablist"]').forEach(function(tl){
+    var ts = tl.querySelectorAll('.tab');
+    ts.forEach(function(t){ t.addEventListener('click', function(){
+      ts.forEach(function(x){ x.setAttribute('aria-selected','false'); });
+      t.setAttribute('aria-selected','true');
+    });});
+  });
+})();
+</script>
+</body>
+</html>
