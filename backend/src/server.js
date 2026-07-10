@@ -5,7 +5,9 @@ import express from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import Anthropic from '@anthropic-ai/sdk';
+import { randomUUID } from 'node:crypto';
 import { SYSTEM_PROMPT } from './prompt.js';
+import { validateLead, saveLead, notifyTelegram } from './lead.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -58,6 +60,15 @@ const chatLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Слишком много запросов. Попробуйте через минуту.' },
+});
+
+// заявок с одного IP нужно сильно меньше, чем сообщений в чат
+const leadLimiter = rateLimit({
+  windowMs: 60_000,
+  max: Number(process.env.RATE_LIMIT_LEAD_PER_MIN || 5),
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { ok: false, error: 'Слишком много заявок. Попробуйте через минуту.' },
 });
 
 // static test page (public/test.html) — handy for local end-to-end checks
@@ -159,6 +170,31 @@ function userError(err) {
   if (err?.status === 429) return 'Сейчас много запросов, попробуйте чуть позже.';
   return 'Не удалось получить ответ. Попробуйте ещё раз.';
 }
+
+// ---- lead (заявка на участие) ---------------------------------------------
+app.post('/api/lead', leadLimiter, async (req, res) => {
+  const { errors, lead } = validateLead(req.body);
+  if (errors) return res.status(400).json({ ok: false, errors });
+
+  const meta = {
+    id: randomUUID(),
+    ts: new Date().toISOString(),
+    ip: req.ip,
+    ua: String(req.get('user-agent') || '').slice(0, 200),
+  };
+
+  try {
+    const record = await saveLead(lead, meta);
+    // уведомление не должно ронять или задерживать ответ клиенту
+    notifyTelegram(record).catch(() => {});
+    // в лог — без персональных данных
+    console.log(`lead ${meta.id} saved (${lead.tariff})`);
+    return res.status(201).json({ ok: true, id: meta.id });
+  } catch (err) {
+    console.error('lead save failed:', err?.code || 'unknown');
+    return res.status(500).json({ ok: false, error: 'Не удалось сохранить заявку. Попробуйте ещё раз.' });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`tp-devushka backend on http://127.0.0.1:${PORT}  (model: ${MODEL})`);
